@@ -1,6 +1,4 @@
 #include "simulation/ElementCommon.h"
-#include "APCP.h"
-
 void Element::Element_COAL()
 {
 	Identifier = "DEFAULT_PT_APCP";
@@ -29,7 +27,7 @@ void Element::Element_COAL()
 	Weight = 100;
 
 	HeatConduct = 200;
-	Description = "Coal, Burns very slowly. Gets red when hot.";
+	Description = "APCP";
 
 	Properties = TYPE_SOLID;
 
@@ -44,12 +42,9 @@ void Element::Element_COAL()
 
 	DefaultProperties.life = 110;
 	DefaultProperties.tmp = 50;
-
-	Update = &Element_COAL_update;
-	Graphics = &Element_COAL_graphics;
 }
 
-int Element_COAL_update(UPDATE_FUNC_ARGS)
+int Element_APCP_update(UPDATE_FUNC_ARGS)
 {
 	if (parts[i].life<=0) {
 		sim->create_part(i, x, y, PT_FIRE);
@@ -58,7 +53,7 @@ int Element_COAL_update(UPDATE_FUNC_ARGS)
 		parts[i].life--;
 		sim->create_part(-1, x + sim->rng.between(-1, 1), y + sim->rng.between(-1, 1), PT_FIRE);
 	}
-	if (parts[i].type == PT_COAL)
+	if (parts[i].type == PT_APCP)
 	{
 		if ((sim->pv[y/CELL][x/CELL] > 4.3f)&&parts[i].tmp>40)
 			parts[i].tmp=39;
@@ -71,32 +66,5 @@ int Element_COAL_update(UPDATE_FUNC_ARGS)
 	}
 	if(parts[i].temp > parts[i].tmp2)
 		parts[i].tmp2 = int(parts[i].temp);
-	return 0;
-}
-
-constexpr float FREQUENCY = 3.1415f/(2*300.0f-(300.0f-200.0f));
-
-int Element_APCP_graphics(GRAPHICS_FUNC_ARGS)
- //Both COAL and Broken Coal
-{
-	*colr += int((cpart->tmp2-295.15f)/3);
-
-	if (*colr > 170)
-		*colr = 170;
-	if (*colr < *colg)
-		*colr = *colg;
-
-	*colg = *colb = *colr;
-
-	// ((cpart->temp-295.15f) > 300.0f-200.0f)
-	if (cpart->temp > 395.15f)
-	{
-		//  q = ((cpart->temp-295.15f)>300.0f)?300.0f-(300.0f-200.0f):(cpart->temp-295.15f)-(300.0f-200.0f);
-		auto q = int((cpart->temp > 595.15f) ? 200.0f : cpart->temp - 395.15f);
-
-		*colr += int(sin(FREQUENCY*q) * 226);
-		*colg += int(sin(FREQUENCY*q*4.55 + TPT_PI_DBL) * 34);
-		*colb += int(sin(FREQUENCY*q*2.22 + TPT_PI_DBL) * 64);
-	}
 	return 0;
 }
